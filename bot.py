@@ -11,6 +11,7 @@ import time
 import threading
 from datetime import datetime, timedelta
 import pytz
+import asyncio
 
 VERSION = "2.1.1"
 
@@ -218,4 +219,4 @@ async def main():
     application.run_polling()
 
 if __name__ == '__main__':
-    main() 
+    asyncio.run(main()) 
