@@ -13,6 +13,58 @@ from datetime import datetime
 
 VERSION = "2.1.1"
 
+# Варианты для рандомизации
+SITE_TITLES = [
+    "Premium Gaming Universe 2025",
+    "Elite Gaming World 2025",
+    "Ultimate Gaming Zone 2025",
+    "Pro Gaming Hub 2025",
+    "Gaming Paradise 2025",
+    "Gaming Masters 2025",
+    "Gaming Legends 2025",
+    "Gaming Empire 2025"
+]
+
+GAME_NAMES = [
+    "NexusPlay",
+    "GameVortex",
+    "PlayMaster",
+    "GamePulse",
+    "PlayNova",
+    "GameForge",
+    "PlayPrime",
+    "GameNexus",
+    "PlayElite",
+    "GameSphere"
+]
+
+BADGES = [
+    ["Elite Choice", "Premium Pick", "Top Rated", "Best Choice", "Editor's Choice"],
+    ["3M+ Users", "5M+ Players", "2M+ Gamers", "4M+ Active", "1M+ Daily"]
+]
+
+def randomize_content(template):
+    """Заменяет статический контент на случайный"""
+    # Случайные значения
+    title = random.choice(SITE_TITLES)
+    game_name = random.choice(GAME_NAMES)
+    badge1 = random.choice(BADGES[0])
+    badge2 = random.choice(BADGES[1])
+    rating = f"{random.uniform(4.5, 5.0):.1f}"
+    users = f"{random.randint(1, 5)}M+"
+    langs = str(random.randint(20, 50))
+    
+    # Замены в шаблоне
+    template = template.replace("Premium Gaming Universe 2025", title)
+    template = template.replace("NexusPlay", game_name)
+    template = template.replace("Elite Choice", badge1)
+    template = template.replace("3M+ Users", badge2)
+    template = template.replace("⭐ 4.9", f"⭐ {rating}")
+    template = template.replace("👥 3M+ active", f"👥 {users} active")
+    template = template.replace("🌍 30 langs", f"🌍 {langs} langs")
+    
+    return template
+
 # Загружаем конфигурацию из JSON
 with open('config.json', 'r') as f:
     config = json.load(f)
@@ -37,7 +89,11 @@ def generate_site(theme=None):
     
     for file in template_files:
         with open(f'templates/{file}', 'r') as f:
-            files[file] = f.read()
+            content = f.read()
+            # Применяем рандомизацию только к index.php
+            if file == 'index.php':
+                content = randomize_content(content)
+            files[file] = content
     
     return files
 
