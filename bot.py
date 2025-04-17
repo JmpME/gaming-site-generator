@@ -11,7 +11,7 @@ import time
 import threading
 from datetime import datetime
 
-VERSION = "2.1.1"
+VERSION = "2.2.0"
 
 # Варианты для рандомизации
 SITE_TITLES = [
@@ -70,8 +70,8 @@ with open('config.json', 'r') as f:
     config = json.load(f)
 
 # Получаем токен бота и список разрешенных пользователей
-TOKEN = config['token']
-ALLOWED_USERS = config['allowed_users']
+TOKEN = config.get('bot_token')
+ALLOWED_USERS = config.get('allowed_users', [])
 
 def generate_site(theme=None):
     """Генерация сайта с готовыми файлами из templates"""
