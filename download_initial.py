@@ -29,32 +29,20 @@ def download_files():
     base_url = "https://raw.githubusercontent.com/JmpME/gaming-site-generator/main/"
     
     # Список файлов для скачивания
-    files = [
-        'bot.py',
-        'requirements.txt',
-        'update_from_github.py'
+    REQUIRED_FILES = [
+        "update_from_github.py",
+        "bot.py",
+        "requirements.txt",
+        "config.json",
+        "templates/index.php",
+        "templates/style.css",
+        "templates/script.js"
     ]
     
     # Скачиваем каждый файл
-    for file in files:
+    for file in REQUIRED_FILES:
         url = base_url + file
         if not download_file(url, file):
-            return False
-    
-    # Скачиваем templates
-    templates_url = base_url + "templates/"
-    if not os.path.exists('templates'):
-        os.makedirs('templates')
-    
-    template_files = [
-        'index.html',
-        'style.css',
-        'script.js'
-    ]
-    
-    for file in template_files:
-        url = templates_url + file
-        if not download_file(url, os.path.join('templates', file)):
             return False
     
     return True
