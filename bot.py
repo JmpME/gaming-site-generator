@@ -201,7 +201,10 @@ async def main():
     restart_thread.start()
     
     # Инициализируем приложение с настройками часового пояса
-    application = Application.builder().token(TOKEN).job_queue_data({'timezone': TIMEZONE}).build()
+    application = Application.builder().token(TOKEN).build()
+
+    # Настраиваем часовой пояс для job_queue после инициализации
+    application.job_queue.scheduler.timezone = TIMEZONE
 
     # Добавляем обработчики команд
     application.add_handler(CommandHandler("start", start))
@@ -216,7 +219,7 @@ async def main():
     print(f"Bot started v{VERSION}")
     
     # Запускаем бота
-    application.run_polling()
+    await application.run_polling()
 
 if __name__ == '__main__':
     asyncio.run(main()) 
