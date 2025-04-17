@@ -1,4 +1,5 @@
 python-telegram-bot==13.7
 pytz
 APScheduler>=3.6.3
-requests>=2.31.0 
+requests>=2.31.0
+python_version<="3.11" 

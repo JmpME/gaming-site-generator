@@ -70,7 +70,7 @@ with open('config.json', 'r') as f:
     config = json.load(f)
 
 # Получаем токен бота и список разрешенных пользователей
-TOKEN = config.get('bot_token')
+TOKEN = config.get('token')
 ALLOWED_USERS = config.get('allowed_users', [])
 
 def generate_site(theme=None):
