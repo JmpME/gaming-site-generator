@@ -15,7 +15,7 @@ from generators import (
 )
 
 # Загружаем конфигурацию из JSON
-with open('bot/config.json', 'r') as f:
+with open('config.json', 'r') as f:
     config = json.load(f)
 
 ALLOWED_USERS = config['allowed_users']
