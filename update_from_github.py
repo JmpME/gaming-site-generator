@@ -5,7 +5,7 @@ import io
 import shutil
 from datetime import datetime
 
-GITHUB_REPO = "JumperME/gaming-site-bot"  # Замените на ваш репозиторий
+GITHUB_REPO = "JmpME/gaming-site-generator"  # Актуальный репозиторий
 GITHUB_BRANCH = "main"
 REQUIRED_FILES = [
     'templates/index.php',
