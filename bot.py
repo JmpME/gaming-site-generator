@@ -200,11 +200,8 @@ async def main():
     restart_thread = threading.Thread(target=auto_restart, daemon=True)
     restart_thread.start()
     
-    # Инициализируем приложение с настройками часового пояса
-    application = Application.builder().token(TOKEN).build()
-
-    # Настраиваем часовой пояс для job_queue после инициализации
-    application.job_queue.scheduler.timezone = TIMEZONE
+    # Инициализируем приложение без job_queue
+    application = Application.builder().token(TOKEN).job_queue(None).build()
 
     # Добавляем обработчики команд
     application.add_handler(CommandHandler("start", start))
