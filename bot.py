@@ -10,6 +10,7 @@ import signal
 import time
 import threading
 from datetime import datetime, timedelta
+import pytz
 
 VERSION = "2.1.1"
 
@@ -17,8 +18,9 @@ VERSION = "2.1.1"
 with open('config.json', 'r') as f:
     config = json.load(f)
 
+# Получаем токен бота и список разрешенных пользователей
+TOKEN = config['token']
 ALLOWED_USERS = config['allowed_users']
-BOT_TOKEN = config['bot_token']
 
 def generate_site(theme=None):
     """Генерация сайта с готовыми файлами из templates"""
@@ -195,7 +197,7 @@ def main():
     restart_thread.start()
     
     # Инициализируем приложение
-    application = Application.builder().token(BOT_TOKEN).build()
+    application = Application.builder().token(TOKEN).build()
 
     # Добавляем обработчики команд
     application.add_handler(CommandHandler("start", start))
