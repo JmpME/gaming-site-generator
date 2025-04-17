@@ -9,8 +9,7 @@ import subprocess
 import signal
 import time
 import threading
-from datetime import datetime, timedelta
-import pytz
+from datetime import datetime
 import asyncio
 
 VERSION = "2.1.1"
@@ -22,9 +21,6 @@ with open('config.json', 'r') as f:
 # Получаем токен бота и список разрешенных пользователей
 TOKEN = config['token']
 ALLOWED_USERS = config['allowed_users']
-
-# Устанавливаем часовой пояс
-TIMEZONE = pytz.timezone('Europe/Kiev')
 
 def generate_site(theme=None):
     """Генерация сайта с готовыми файлами из templates"""
@@ -200,8 +196,8 @@ async def main():
     restart_thread = threading.Thread(target=auto_restart, daemon=True)
     restart_thread.start()
     
-    # Инициализируем приложение без job_queue
-    application = Application.builder().token(TOKEN).job_queue(None).build()
+    # Инициализируем приложение
+    application = Application.builder().token(TOKEN).build()
 
     # Добавляем обработчики команд
     application.add_handler(CommandHandler("start", start))
