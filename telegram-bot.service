@@ -1,0 +1,14 @@
+[Unit]
+Description=Telegram Gaming Site Generator Bot
+After=network.target
+
+[Service]
+Type=simple
+User=JumperME
+WorkingDirectory=/home/JumperME/bot
+ExecStart=/usr/bin/python3 bot.py
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target 
