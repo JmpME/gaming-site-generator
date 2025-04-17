@@ -22,6 +22,9 @@ with open('config.json', 'r') as f:
 TOKEN = config['token']
 ALLOWED_USERS = config['allowed_users']
 
+# Устанавливаем часовой пояс
+TIMEZONE = pytz.timezone('Europe/Kiev')
+
 def generate_site(theme=None):
     """Генерация сайта с готовыми файлами из templates"""
     files = {}
@@ -186,7 +189,7 @@ async def log_restart(update, context):
         with open('restart.log', 'w') as f:
             f.write(f"{datetime.now()}: Bot started\n")
 
-def main():
+async def main():
     # Проверяем наличие файла-триггера для перезапуска
     if os.path.exists('restart_trigger'):
         os.remove('restart_trigger')
@@ -196,8 +199,8 @@ def main():
     restart_thread = threading.Thread(target=auto_restart, daemon=True)
     restart_thread.start()
     
-    # Инициализируем приложение
-    application = Application.builder().token(TOKEN).build()
+    # Инициализируем приложение с настройками часового пояса
+    application = Application.builder().token(TOKEN).job_queue_data({'timezone': TIMEZONE}).build()
 
     # Добавляем обработчики команд
     application.add_handler(CommandHandler("start", start))
