@@ -1,4 +1,4 @@
-python-telegram-bot>=20.0
-pytz>=2024.1
+python-telegram-bot==13.7
+pytz
 APScheduler>=3.6.3
 requests>=2.31.0 

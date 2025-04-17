@@ -1,5 +1,5 @@
 import os
-from telegram.ext import Application, CommandHandler, MessageHandler, filters
+from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
 import zipfile
 import io
 import random
@@ -10,7 +10,6 @@ import signal
 import time
 import threading
 from datetime import datetime
-import asyncio
 
 VERSION = "2.1.1"
 
@@ -51,12 +50,12 @@ def create_zip(files):
     memory_zip.seek(0)
     return memory_zip
 
-async def start(update, context):
+def start(update, context):
     if update.message.from_user.username not in ALLOWED_USERS:
-        await update.message.reply_text("⛔ Access denied")
+        update.message.reply_text("⛔ Access denied")
         return
     
-    await update.message.reply_text(
+    update.message.reply_text(
         f"🎮 Gaming Site Generator v{VERSION}\n\n"
         "Available commands:\n"
         "/generate - create site with random theme\n"
@@ -71,59 +70,59 @@ async def start(update, context):
         "- Mobile optimization"
     )
 
-async def generate_site_command(update, context):
+def generate_site_command(update, context):
     if update.message.from_user.username not in ALLOWED_USERS:
-        await update.message.reply_text("⛔ Access denied")
+        update.message.reply_text("⛔ Access denied")
         return
 
-    await update.message.reply_text("🔄 Generating site...")
+    update.message.reply_text("🔄 Generating site...")
     
     try:
         files = generate_site()
         zip_file = create_zip(files)
         
-        await update.message.reply_document(
+        update.message.reply_document(
             document=zip_file,
             filename=f'gaming_site_{random_string()}.zip',
             caption="✅ Site generated successfully!"
         )
     except Exception as e:
-        await update.message.reply_text(f"❌ Error: {str(e)}")
+        update.message.reply_text(f"❌ Error: {str(e)}")
 
-async def theme_command(update, context):
+def theme_command(update, context):
     if update.message.from_user.username not in ALLOWED_USERS:
-        await update.message.reply_text("⛔ Access denied")
+        update.message.reply_text("⛔ Access denied")
         return
 
     theme = ' '.join(context.args) if context.args else None
     
     if not theme:
-        await update.message.reply_text("Please specify a theme color!")
+        update.message.reply_text("Please specify a theme color!")
         return
         
-    await update.message.reply_text(f"🔄 Generating site with {theme} theme...")
+    update.message.reply_text(f"🔄 Generating site with {theme} theme...")
     
     try:
         files = generate_site(theme)
         zip_file = create_zip(files)
         
-        await update.message.reply_document(
+        update.message.reply_document(
             document=zip_file,
             filename=f'gaming_site_{theme}_{random_string()}.zip',
             caption="✅ Site generated successfully!"
         )
     except Exception as e:
-        await update.message.reply_text(f"❌ Error: {str(e)}")
+        update.message.reply_text(f"❌ Error: {str(e)}")
 
 def random_string():
     return ''.join(random.choices(string.ascii_lowercase + string.digits, k=8))
 
-async def update_command(update, context):
+def update_command(update, context):
     if update.message.from_user.username not in ALLOWED_USERS:
-        await update.message.reply_text("⛔ Access denied")
+        update.message.reply_text("⛔ Access denied")
         return
     
-    await update.message.reply_text("🔄 Starting update from GitHub...")
+    update.message.reply_text("🔄 Starting update from GitHub...")
     try:
         # Импортируем функцию обновления
         from update_from_github import update_files
@@ -132,7 +131,7 @@ async def update_command(update, context):
         success = update_files()
         
         if success:
-            await update.message.reply_text(f"✅ Update completed successfully!\n✨ Current version: v{VERSION}\n🔄 Restarting bot...")
+            update.message.reply_text(f"✅ Update completed successfully!\n✨ Current version: v{VERSION}\n🔄 Restarting bot...")
             
             # Создаем файл-триггер для перезапуска
             with open('restart_trigger', 'w') as f:
@@ -141,17 +140,17 @@ async def update_command(update, context):
             # Завершаем текущий процесс
             os.kill(os.getpid(), signal.SIGTERM)
         else:
-            await update.message.reply_text("❌ Update failed, check server logs for details")
+            update.message.reply_text("❌ Update failed, check server logs for details")
             
     except Exception as e:
-        await update.message.reply_text(f"❌ Error during update: {str(e)}")
+        update.message.reply_text(f"❌ Error during update: {str(e)}")
 
-async def restart_command(update, context):
+def restart_command(update, context):
     if update.message.from_user.username not in ALLOWED_USERS:
-        await update.message.reply_text("⛔ Access denied")
+        update.message.reply_text("⛔ Access denied")
         return
     
-    await update.message.reply_text("🔄 Restarting bot...")
+    update.message.reply_text("🔄 Restarting bot...")
     try:
         # Создаем файл-триггер для перезапуска
         with open('restart_trigger', 'w') as f:
@@ -161,7 +160,7 @@ async def restart_command(update, context):
         os.kill(os.getpid(), signal.SIGTERM)
         
     except Exception as e:
-        await update.message.reply_text(f"❌ Error during restart: {str(e)}")
+        update.message.reply_text(f"❌ Error during restart: {str(e)}")
 
 def auto_restart():
     """Автоматический перезапуск каждые 10 минут"""
@@ -178,7 +177,7 @@ def auto_restart():
         except Exception as e:
             print(f"Error in auto_restart: {str(e)}")
 
-async def log_restart(update, context):
+def log_restart(update, context):
     if os.path.exists('restart.log'):
         with open('restart.log', 'a') as f:
             f.write(f"{datetime.now()}: Bot restarted\n")
@@ -186,7 +185,7 @@ async def log_restart(update, context):
         with open('restart.log', 'w') as f:
             f.write(f"{datetime.now()}: Bot started\n")
 
-async def main():
+def main():
     # Проверяем наличие файла-триггера для перезапуска
     if os.path.exists('restart_trigger'):
         os.remove('restart_trigger')
@@ -196,23 +195,25 @@ async def main():
     restart_thread = threading.Thread(target=auto_restart, daemon=True)
     restart_thread.start()
     
-    # Инициализируем приложение
-    application = Application.builder().token(TOKEN).build()
+    # Инициализируем бота
+    updater = Updater(TOKEN, use_context=True)
+    dp = updater.dispatcher
 
     # Добавляем обработчики команд
-    application.add_handler(CommandHandler("start", start))
-    application.add_handler(CommandHandler("generate", generate_site_command))
-    application.add_handler(CommandHandler("theme", theme_command))
-    application.add_handler(CommandHandler("update", update_command))
-    application.add_handler(CommandHandler("restart", restart_command))
+    dp.add_handler(CommandHandler("start", start))
+    dp.add_handler(CommandHandler("generate", generate_site_command))
+    dp.add_handler(CommandHandler("theme", theme_command))
+    dp.add_handler(CommandHandler("update", update_command))
+    dp.add_handler(CommandHandler("restart", restart_command))
     
     # Добавляем обработчик для логирования перезапусков
-    application.add_handler(MessageHandler(filters.StatusUpdate.NEW_CHAT_MEMBERS, log_restart))
+    dp.add_handler(MessageHandler(Filters.status_update.new_chat_members, log_restart))
 
     print(f"Bot started v{VERSION}")
     
     # Запускаем бота
-    await application.run_polling()
+    updater.start_polling()
+    updater.idle()
 
 if __name__ == '__main__':
-    asyncio.run(main()) 
+    main() 
