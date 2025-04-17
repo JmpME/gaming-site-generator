@@ -1,9 +1,104 @@
 import os
-from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
+import json
+import logging
+from telegram import Update
+from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes
+import threading
+import time
+import subprocess
+import sys
+import pytz
+from datetime import datetime
 import zipfile
 import io
 import random
 import string
+<<<<<<< HEAD
+import tempfile
+import shutil
+
+# Настройка логирования
+logging.basicConfig(
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    level=logging.INFO
+)
+logger = logging.getLogger(__name__)
+
+# Константы
+TIMEZONE = pytz.timezone('Europe/Moscow')
+RESTART_INTERVAL = 6 * 60 * 60  # 6 часов в секундах
+VERSION = "2.2.0"
+
+# Список стилей
+STYLES = ["classic", "dark", "neon", "gradient", "minimal"]
+
+# Загрузка конфигурации
+def load_config():
+    try:
+        with open('config.json', 'r') as f:
+            return json.load(f)
+    except FileNotFoundError:
+        logger.error("Файл config.json не найден")
+        sys.exit(1)
+    except json.JSONDecodeError:
+        logger.error("Ошибка в формате config.json")
+        sys.exit(1)
+
+config = load_config()
+TOKEN = config.get('token')
+if not TOKEN:
+    logger.error("Токен не найден в config.json")
+    sys.exit(1)
+
+ALLOWED_USERS = config.get('allowed_users', [])
+
+def randomize_content(content):
+    """Рандомизирует контент сайта"""
+    # Выбираем случайный стиль
+    style = random.choice(STYLES)
+    content = content.replace('<body>', f'<body class="{style}">')
+    
+    return content
+
+def generate_site(theme=None):
+    """Генерирует сайт с заданной темой"""
+    try:
+        # Создаем временную директорию
+        with tempfile.TemporaryDirectory() as temp_dir:
+            # Копируем шаблоны
+            templates_dir = os.path.join(os.path.dirname(__file__), 'templates')
+            for file in os.listdir(templates_dir):
+                if file.endswith(('.php', '.css', '.html')):
+                    shutil.copy2(
+                        os.path.join(templates_dir, file),
+                        os.path.join(temp_dir, file)
+                    )
+            
+            # Рандомизируем контент
+            index_path = os.path.join(temp_dir, 'index.php')
+            with open(index_path, 'r') as f:
+                content = f.read()
+            
+            content = randomize_content(content)
+            
+            with open(index_path, 'w') as f:
+                f.write(content)
+            
+            # Создаем ZIP-архив
+            zip_path = os.path.join(temp_dir, 'site.zip')
+            with zipfile.ZipFile(zip_path, 'w') as zipf:
+                for root, _, files in os.walk(temp_dir):
+                    for file in files:
+                        if file != 'site.zip':
+                            file_path = os.path.join(root, file)
+                            arcname = os.path.relpath(file_path, temp_dir)
+                            zipf.write(file_path, arcname)
+            
+            return zip_path
+    except Exception as e:
+        logger.error(f"Ошибка при генерации сайта: {e}")
+        return None
+=======
 import json
 import subprocess
 import signal
@@ -96,21 +191,21 @@ def generate_site(theme=None):
             files[file] = content
     
     return files
+>>>>>>> bbe2c17869f75ab1b0ed0e2a1e7eaf15cb6e208b
 
-def create_zip(files):
-    """Создание ZIP архива в памяти"""
-    memory_zip = io.BytesIO()
-    with zipfile.ZipFile(memory_zip, 'w') as zf:
-        for fname, content in files.items():
-            zf.writestr(fname, content)
-    memory_zip.seek(0)
-    return memory_zip
-
-def start(update, context):
-    if update.message.from_user.username not in ALLOWED_USERS:
-        update.message.reply_text("⛔ Access denied")
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if str(update.effective_user.id) not in ALLOWED_USERS:
+        await update.message.reply_text("У вас нет доступа к этому боту.")
         return
     
+<<<<<<< HEAD
+    await update.message.reply_text(
+        "Привет! Я бот для генерации сайтов.\n"
+        "Доступные команды:\n"
+        "/generate - Сгенерировать сайт\n"
+        "/theme [цвет] - Установить тему сайта\n"
+        "/update - Обновить бота"
+=======
     update.message.reply_text(
         f"🎮 Gaming Site Generator v{VERSION}\n\n"
         "Available commands:\n"
@@ -124,54 +219,83 @@ def start(update, context):
         "- Palladium integration\n"
         "- Tracking parameters\n"
         "- Mobile optimization"
+>>>>>>> bbe2c17869f75ab1b0ed0e2a1e7eaf15cb6e208b
     )
 
-def generate_site_command(update, context):
-    if update.message.from_user.username not in ALLOWED_USERS:
-        update.message.reply_text("⛔ Access denied")
+async def generate(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if str(update.effective_user.id) not in ALLOWED_USERS:
+        await update.message.reply_text("У вас нет доступа к этому боту.")
         return
-
-    update.message.reply_text("🔄 Generating site...")
     
     try:
-        files = generate_site()
-        zip_file = create_zip(files)
-        
-        update.message.reply_document(
-            document=zip_file,
-            filename=f'gaming_site_{random_string()}.zip',
-            caption="✅ Site generated successfully!"
-        )
+        zip_path = generate_site()
+        if zip_path:
+            with open(zip_path, 'rb') as f:
+                await update.message.reply_document(
+                    document=f,
+                    filename='site.zip',
+                    caption='Ваш сайт готов!'
+                )
+            os.remove(zip_path)
+        else:
+            await update.message.reply_text("Произошла ошибка при генерации сайта.")
     except Exception as e:
-        update.message.reply_text(f"❌ Error: {str(e)}")
+        logger.error(f"Ошибка при генерации сайта: {e}")
+        await update.message.reply_text("Произошла ошибка при генерации сайта.")
 
-def theme_command(update, context):
-    if update.message.from_user.username not in ALLOWED_USERS:
-        update.message.reply_text("⛔ Access denied")
+async def theme(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if str(update.effective_user.id) not in ALLOWED_USERS:
+        await update.message.reply_text("У вас нет доступа к этому боту.")
         return
-
-    theme = ' '.join(context.args) if context.args else None
     
-    if not theme:
-        update.message.reply_text("Please specify a theme color!")
+    if not context.args:
+        await update.message.reply_text("Укажите цвет темы. Например: /theme blue")
         return
-        
-    update.message.reply_text(f"🔄 Generating site with {theme} theme...")
+    
+    color = context.args[0].lower()
+    try:
+        zip_path = generate_site(color)
+        if zip_path:
+            with open(zip_path, 'rb') as f:
+                await update.message.reply_document(
+                    document=f,
+                    filename='site.zip',
+                    caption=f'Сайт с темой {color} готов!'
+                )
+            os.remove(zip_path)
+        else:
+            await update.message.reply_text("Произошла ошибка при генерации сайта.")
+    except Exception as e:
+        logger.error(f"Ошибка при установке темы: {e}")
+        await update.message.reply_text("Произошла ошибка при установке темы.")
+
+async def update_bot(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if str(update.effective_user.id) not in ALLOWED_USERS:
+        await update.message.reply_text("У вас нет доступа к этому боту.")
+        return
     
     try:
-        files = generate_site(theme)
-        zip_file = create_zip(files)
-        
-        update.message.reply_document(
-            document=zip_file,
-            filename=f'gaming_site_{theme}_{random_string()}.zip',
-            caption="✅ Site generated successfully!"
-        )
+        from update_from_github import update_from_github
+        success = update_from_github()
+        if success:
+            await update.message.reply_text("Бот успешно обновлен! Перезапуск...")
+            subprocess.Popen(['python3', 'restart.py'])
+        else:
+            await update.message.reply_text("Ошибка при обновлении бота.")
     except Exception as e:
-        update.message.reply_text(f"❌ Error: {str(e)}")
+        logger.error(f"Ошибка при обновлении бота: {e}")
+        await update.message.reply_text("Произошла ошибка при обновлении бота.")
 
-def random_string():
-    return ''.join(random.choices(string.ascii_lowercase + string.digits, k=8))
+async def error_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    logger.error(f"Ошибка: {context.error}")
+    if update and update.effective_message:
+        await update.effective_message.reply_text("Произошла ошибка. Пожалуйста, попробуйте позже.")
+
+def auto_restart():
+    while True:
+        time.sleep(RESTART_INTERVAL)
+        logger.info("Автоматический перезапуск бота...")
+        subprocess.Popen(['python3', 'restart.py'])
 
 def update_command(update, context):
     if update.message.from_user.username not in ALLOWED_USERS:
@@ -242,6 +366,26 @@ def log_restart(update, context):
             f.write(f"{datetime.now()}: Bot started\n")
 
 def main():
+<<<<<<< HEAD
+    # Создание приложения
+    application = Application.builder().token(TOKEN).build()
+    
+    # Добавление обработчиков
+    application.add_handler(CommandHandler("start", start))
+    application.add_handler(CommandHandler("generate", generate))
+    application.add_handler(CommandHandler("theme", theme))
+    application.add_handler(CommandHandler("update", update_bot))
+    application.add_error_handler(error_handler)
+    
+    # Запуск потока автоматического перезапуска
+    restart_thread = threading.Thread(target=auto_restart)
+    restart_thread.daemon = True
+    restart_thread.start()
+    
+    # Запуск бота
+    logger.info(f"Bot started v{VERSION}")
+    application.run_polling()
+=======
     # Проверяем наличие файла-триггера для перезапуска
     if os.path.exists('restart_trigger'):
         os.remove('restart_trigger')
@@ -270,6 +414,7 @@ def main():
     # Запускаем бота
     updater.start_polling()
     updater.idle()
+>>>>>>> bbe2c17869f75ab1b0ed0e2a1e7eaf15cb6e208b
 
 if __name__ == '__main__':
     main() 

@@ -1,5 +1,12 @@
+<<<<<<< HEAD
+python-telegram-bot>=20.0
+pytz
+APScheduler==3.10.1
+requests==2.31.0 
+=======
 python-telegram-bot==13.7
 pytz
 APScheduler>=3.6.3
 requests>=2.31.0
 python_version<="3.11" 
+>>>>>>> bbe2c17869f75ab1b0ed0e2a1e7eaf15cb6e208b

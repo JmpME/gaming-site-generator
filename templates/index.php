@@ -4,6 +4,10 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Premium Gaming Universe 2025</title>
+<<<<<<< HEAD
+  <link rel="stylesheet" href="styles.css">
+=======
+>>>>>>> bbe2c17869f75ab1b0ed0e2a1e7eaf15cb6e208b
   <style>
     body {
       margin: 0;
